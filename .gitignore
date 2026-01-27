@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Conda / Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+conda-env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs & temp
+*.log
+
