@@ -17,7 +17,7 @@ def load_and_clean_lidar(path):
 
     pcd, ind = pcd.remove_statistical_outlier(nb_neighbors=15, std_ratio=2.0)
 
-    # pcd = pcd.voxel_down_sample(voxel_size = 0.35)
+    pcd = pcd.voxel_down_sample(voxel_size = 0.35)
 
     points = np.asarray(pcd.points)
     return points
