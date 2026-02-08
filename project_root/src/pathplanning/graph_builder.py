@@ -1,6 +1,9 @@
 from src.utils.geo_helpers import compute_edge_weight
 
 def build_graph(points, neighbour_indices, neighbour_distances):
+    # Building the graph using adjacency list
+    # adjacency list
+    # graph[i] = list of (neighbour_index, weight)
     N = points.shape[0]
     graph = [[] for _ in range(N)]
     added_edges = set()

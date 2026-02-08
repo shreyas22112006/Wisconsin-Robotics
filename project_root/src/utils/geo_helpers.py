@@ -1,6 +1,7 @@
 import numpy as np
 from configs.settings import MAX_SLOPE_DEG, SLOPE_MULTIPLIER
 
+# Weight = distance * (1 + overall slope cost)
 def compute_edge_weight(i, j, dist, points):
     dx = points[j][0] - points[i][0]
     dy = points[j][1] - points[i][1]
