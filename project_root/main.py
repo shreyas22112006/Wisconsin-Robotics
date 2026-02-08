@@ -4,7 +4,7 @@ import os
 # Add parent folder of project_root to path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from src.pathplanning.graph_builder import build_graph
+from src.pathplanning.graph_builder import build_graph_vectorized
 from src.pointcloud.knn_builder import build_knn
 from src.pointcloud.load_clean import load_and_clean_lidar
 
@@ -28,7 +28,7 @@ def main():
     print(f"KNN built in {end_time - start_time:.2f} seconds.")
 
     start_time = time.time()
-    graph = build_graph(points, neighbour_indices, neighbour_distances)
+    graph = build_graph_vectorized(points, neighbour_indices, neighbour_distances)
     end_time = time.time()
     print(f"Graph built in {end_time - start_time:.2f} seconds.")
 

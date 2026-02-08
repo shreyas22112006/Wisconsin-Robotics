@@ -5,7 +5,7 @@ def compute_graph_stats(graph):
     num_nodes = len(graph)
 
     # degree of each node
-    degrees = np.array([len(neigbours) for neigbours in graph])
+    degrees = np.array([len(neighbors) for neighbors in graph.values()])
 
     # each edge appears twice
     total_edges = degrees.sum() // 2
