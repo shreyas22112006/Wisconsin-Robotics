@@ -19,4 +19,4 @@ def build_knn(points):
     neighbour_indices = indices[:, 1:] # shape -> (N,k)
     neighbour_distances = distances[:, 1:] # shape -> (N,k)
 
-    return neighbour_indices, neighbour_distances
+    return neighbour_indices, neighbour_distances, tree
