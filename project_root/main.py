@@ -19,7 +19,7 @@ def main():
 
     x, y, z = gps_to_xyz(lat, lon, alt)
     start = [x, y, z]
-    start_idx, start_nearest_point, _ = find_nearest_node(start, points, tree)
+    start_idx, start_nearest_point = find_nearest_node(start, points, tree)
 
     NT = int(input("Enter number of targets : "))
     targets = []
@@ -28,11 +28,11 @@ def main():
     nearest_nodes.append([int(start_idx), start_nearest_point.tolist()])
 
     for i in range(NT):
-        lat, lon, alt = map(float, input(f"Enter gps info of {i}th target (lat lon alt) : ").split())
+        lat, lon, alt = map(float, input(f"Enter gps info of {i+1}th target (lat lon alt) : ").split())
         x, y, z = gps_to_xyz(lat, lon, alt)
         coords = [x, y, z]
         targets.append(coords)
-        nearest_idx, nearest_point, _ = find_nearest_node(coords, points, tree)
+        nearest_idx, nearest_point = find_nearest_node(coords, points, tree)
         nearest_nodes.append([int(nearest_idx), nearest_point.tolist()])
 
     graph = build_graph_vectorized(points, neighbour_indices, neighbour_distances)
