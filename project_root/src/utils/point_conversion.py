@@ -69,7 +69,7 @@ def gps_to_xyz(lat, lon, alt, epsg):
     # because always_xy=True enforces x (lon) before y (lat)
     x, y = transformer.transform(lon, lat)
 
-    # Altitude is used directly as z — no transformation needed
+    # Altitude is used directly as z no transformation needed
     # since both coordinate systems use metres for height
     z = alt
 
