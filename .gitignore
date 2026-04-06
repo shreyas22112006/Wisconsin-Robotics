@@ -1,19 +1,31 @@
-# macOS
-.DS_Store
-
-# Conda / Python
+# Python bytecode
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
-.env
-.venv
-conda-env/
 
-# IDEs
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE files
 .vscode/
 .idea/
 
-# Logs & temp
-*.log
+# OS files
+.DS_Store
+Thumbs.db
 
+# LiDAR / point cloud data (large files)
+*.laz
+*.las
+*.npy
+*.npz
+
+# Logs
+*.log
