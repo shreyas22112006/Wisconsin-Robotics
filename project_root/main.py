@@ -11,6 +11,7 @@ from src.pointcloud.knn_builder import build_knn
 from src.pathplanning.graph_builder import build_graph_vectorized
 from src.utils.nearest_point import find_nearest_node
 from src.utils.point_conversion import *
+from src.pathplanning.multi_target import compute_cost_matrix, find_best_order, build_full_path
 
 def main():
     # Get the LiDAR file path from the user and load it
@@ -50,24 +51,34 @@ def main():
         # Take GPS input for each target and convert to XYZ
         lat, lon, alt = map(float, input(f"Enter gps info of {i+1}th target (lat lon alt) : ").split())
         x, y, z = gps_to_xyz(lat, lon, alt)
-
         # Snap each target GPS point to the nearest connected node in the graph
         nearest_idx, nearest_point = find_nearest_node([x, y, z], points, tree, graph)
-
         # Store each target as a dictionary with its graph index and 3D coordinates
         target_nodes.append({"index": int(nearest_idx), "point": nearest_point.tolist()})
 
-    # Return everything A* will need:
-    # - start node index and coordinates
-    # - list of target node indices and coordinates
-    # - the full weighted graph for pathfinding
-    # - the full points array for heuristic distance calculations in A*
-    return {
-        "start": {"index": int(start_idx), "point": start_nearest_point.tolist()},
-        "targets": target_nodes,
-        "graph": graph,
-        "points": points
-    }
+    # position 0 is always start, positions 1..N are targets
+    # this is the list that cost_matrix and path_matrix are indexed against
+    node_indices = [start_idx] + [t["index"] for t in target_nodes]
+
+    # runs A* between every pair of nodes in node_indices
+    # cost_matrix[i][j] -> total travel cost from node i to node j
+    # path_matrix[i][j] -> actual list of graph node indices from node i to node j
+    print("Computing pairwise paths, this may take a moment...")
+    cost_matrix, path_matrix = compute_cost_matrix(graph, points, node_indices)
+
+    # brute forces all permutations of target visit order using the cost matrix
+    # best_order -> list of matrix positions in optimal visit order e.g. [2, 1, 3]
+    # best_cost -> total cost of that optimal ordering
+    best_order, best_cost = find_best_order(cost_matrix)
+    print(f"Best path cost : {best_cost:.2f}")
+
+    # stitches together individual A* path segments in the best order
+    # returns a single flat list of node indices representing the complete route
+    full_path = build_full_path(path_matrix, best_order)
+    print(f"Full path has {len(full_path)} nodes")
+
+    # return full_path and points together since visualization will need both
+    return full_path, points
 
 if __name__ == "__main__":
     main()
