@@ -1,7 +1,6 @@
 K_NEIGHBORS = 10
 MAX_SLOPE_DEG = 36
 SLOPE_MULTIPLIER = 5
-CELL_SIZE = 1.0
 
 '''
 Wheel width: 8 in
