@@ -5,13 +5,13 @@ import os
 # so that imports like "from src.utils..." resolve correctly
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from src.utils.point_conversion import gps_to_xyz
 from src.pointcloud.load_clean import load_and_clean_lidar
 from src.pointcloud.knn_builder import build_knn
 from src.pathplanning.graph_builder import build_graph_vectorized
 from src.utils.nearest_point import find_nearest_node
 from src.utils.point_conversion import *
 from src.pathplanning.multi_target import compute_cost_matrix, find_best_order, build_full_path
+from src.utils.visualization import visualize_path
 
 def main():
     # Get the LiDAR file path from the user and load it
@@ -36,7 +36,7 @@ def main():
 
     # Take GPS input for the start point and convert to XYZ cartesian coordinates
     lat, lon, alt = map(float, input("Enter gps info of starting point (lat lon alt) : ").split())
-    x, y, z = gps_to_xyz(lat, lon, alt)
+    x, y, z = gps_to_xyz(lat, lon, alt, epsg)
 
     # Snap the start GPS point to the nearest connected node in the graph
     # start_idx -> index of the nearest valid node in points array
@@ -76,6 +76,9 @@ def main():
     # returns a single flat list of node indices representing the complete route
     full_path = build_full_path(path_matrix, best_order)
     print(f"Full path has {len(full_path)} nodes")
+
+    # run visualization automatically, opens as an HTML file in the browser
+    visualize_path(full_path, points, start_idx, target_nodes, epsg)
 
     # return full_path and points together since visualization will need both
     return full_path, points
