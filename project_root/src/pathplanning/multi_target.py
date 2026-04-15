@@ -57,14 +57,22 @@ def find_best_order(cost_matrix):
         # Always start from index 0 (the start node)
         cost = 0
         prev = 0
+        reachable = True
 
         for curr in perm:
-            cost += cost_matrix[prev][curr]
+            leg_cost = cost_matrix[prev][curr]
+            if leg_cost == float('inf'):
+                reachable = False
+                break
+            cost += leg_cost
             prev = curr
 
-        if cost < best_cost:
+        if reachable and cost < best_cost:
             best_cost = cost
             best_order = perm
+
+    if best_order is None:
+        raise ValueError("No valid path exists between all waypoints. Some nodes may be unreachable.")
 
     return list(best_order), best_cost
 

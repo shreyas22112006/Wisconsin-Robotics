@@ -22,7 +22,7 @@ def find_nearest_node(xy, points_array, graph):
         # Check 2: node has at least one edge (not an isolated dead-end node)
         # A node can exist in points_array but have no edges if all its
         # connections were rejected due to being too steep in graph_builder
-        if idx in graph and len(graph[idx]) > 0:
+        if idx < len(graph) and len(graph[idx]) > 0:
             # Return the index and the 3D coordinates of the chosen node
             return idx, points_array[idx]
 

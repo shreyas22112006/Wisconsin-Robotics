@@ -1,6 +1,5 @@
 from src.utils.geo_helpers import *
 import numpy as np
-from collections import defaultdict
 
 '''
 def build_graph(points, neighbour_indices, neighbour_distances):
@@ -57,10 +56,26 @@ def build_graph_vectorized(points, neighbour_indices, neighbour_distances):
     b = b[unique_idx]
     edge_weights = edge_weights[unique_idx]
 
-    # Step 5: build adjacency list (compatible with old graph_stats)
-    graph = defaultdict(list)
-    for u, v, w in zip(a, b, edge_weights):
-        graph[u].append((v, w))
-        graph[v].append((u, w))
+    # Step 5: build adjacency list without Python append loop
+    # Lay out both directions as flat arrays, sort by source node,
+    # then slice per-node — same edges/weights, no per-edge Python overhead
+    all_src = np.concatenate([a, b])
+    all_dst = np.concatenate([b, a])
+    all_w   = np.concatenate([edge_weights, edge_weights])
+
+    sort_idx = np.argsort(all_src, kind='stable')
+    all_src  = all_src[sort_idx]
+    all_dst  = all_dst[sort_idx]
+    all_w    = all_w[sort_idx]
+
+    counts = np.bincount(all_src, minlength=N)
+    indptr = np.zeros(N + 1, dtype=np.int64)
+    indptr[1:] = np.cumsum(counts)
+
+    graph = [
+        list(zip(all_dst[indptr[i]:indptr[i+1]],
+                 all_w[indptr[i]:indptr[i+1]]))
+        for i in range(N)
+    ]
 
     return graph
