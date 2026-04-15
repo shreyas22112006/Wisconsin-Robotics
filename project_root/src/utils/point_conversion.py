@@ -39,25 +39,24 @@ def get_epsg(laz_path):
     return epsg
 
 
-def gps_to_xyz(lat, lon, alt, epsg):
+def gps_to_xy(lat, lon, epsg):
     """
-    Converts a GPS coordinate (lat, lon, alt) into the same coordinate
+    Converts a GPS coordinate (lat, lon) into the same horizontal coordinate
     system as the LiDAR points in the LAZ file.
-    
-    Why this matters:
-        GPS coordinates are in WGS84 (EPSG:4326) — a global lat/lon system.
-        LiDAR points are stored in a local projected system (e.g. UTM).
-        These two systems are incompatible — you cannot directly compare them.
-        This function converts the GPS point into the LiDAR's coordinate system
-        so that find_nearest_node can correctly find the closest LiDAR point.
-    
+
+    Why only x/y and not z:
+        Competition waypoints are given as lat/lon only — no altitude.
+        Even if altitude were available, GPS altitude (WGS84 ellipsoidal) does
+        not match LiDAR z values which are in a different vertical datum.
+        The correct z for any position comes from the LiDAR terrain data itself,
+        so snapping to the nearest node is done in 2D (x/y only).
+
     Args:
         lat:  latitude in degrees (WGS84)
         lon:  longitude in degrees (WGS84)
-        alt:  altitude in metres (kept as z directly)
         epsg: EPSG code of the LAZ file's coordinate system (from get_epsg)
     Returns:
-        x, y, z: coordinates in the same projection as the LiDAR points
+        x, y: horizontal coordinates in the same projection as the LiDAR points
     """
 
     # Create a transformer that converts FROM WGS84 GPS (EPSG:4326)
@@ -73,8 +72,4 @@ def gps_to_xyz(lat, lon, alt, epsg):
     # because always_xy=True enforces x (lon) before y (lat)
     x, y = transformer.transform(lon, lat)
 
-    # Altitude is used directly as z no transformation needed
-    # since both coordinate systems use metres for height
-    z = alt
-
-    return x, y, z
+    return x, y

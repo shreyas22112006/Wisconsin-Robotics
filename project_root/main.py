@@ -9,7 +9,7 @@ from src.pointcloud.load_clean import load_and_clean_lidar
 from src.pointcloud.knn_builder import build_knn
 from src.pathplanning.graph_builder import build_graph_vectorized
 from src.utils.nearest_point import find_nearest_node
-from src.utils.point_conversion import get_epsg, gps_to_xyz
+from src.utils.point_conversion import get_epsg, gps_to_xy
 from src.pathplanning.multi_target import compute_cost_matrix, find_best_order, build_full_path
 from src.utils.visualization import visualize_path
 
@@ -34,25 +34,26 @@ def main():
     # Read EPSG once from the LAZ file and reuse for all GPS conversions
     epsg = get_epsg(file_path)
 
-    # Take GPS input for the start point and convert to XYZ cartesian coordinates
-    lat, lon, alt = map(float, input("Enter gps info of starting point (lat lon alt) : ").split())
-    x, y, z = gps_to_xyz(lat, lon, alt, epsg)
+    # Take GPS input for the start point and convert to XY projected coordinates
+    # Only lat/lon is taken — z comes from the LiDAR terrain data via nearest node snapping
+    lat, lon = map(float, input("Enter gps info of starting point (lat lon) : ").split())
+    x, y = gps_to_xy(lat, lon, epsg)
 
-    # Snap the start GPS point to the nearest connected node in the graph
+    # Snap the start GPS point to the nearest connected node in the graph using 2D distance
     # start_idx -> index of the nearest valid node in points array
     # start_nearest_point -> 3D coordinates of that node
-    start_idx, start_nearest_point = find_nearest_node([x, y, z], points, tree, graph)
+    start_idx, start_nearest_point = find_nearest_node([x, y], points, graph)
 
     # Take the number of target points from the user
     NT = int(input("Enter number of targets : "))
     target_nodes = []
 
     for i in range(NT):
-        # Take GPS input for each target and convert to XYZ
-        lat, lon, alt = map(float, input(f"Enter gps info of {i+1}th target (lat lon alt) : ").split())
-        x, y, z = gps_to_xyz(lat, lon, alt, epsg)
-        # Snap each target GPS point to the nearest connected node in the graph
-        nearest_idx, nearest_point = find_nearest_node([x, y, z], points, tree, graph)
+        # Take GPS input for each target and convert to XY projected coordinates
+        lat, lon = map(float, input(f"Enter gps info of {i+1}th target (lat lon) : ").split())
+        x, y = gps_to_xy(lat, lon, epsg)
+        # Snap each target GPS point to the nearest connected node in the graph using 2D distance
+        nearest_idx, nearest_point = find_nearest_node([x, y], points, graph)
         # Store each target as a dictionary with its graph index and 3D coordinates
         target_nodes.append({"index": int(nearest_idx), "point": nearest_point.tolist()})
 
