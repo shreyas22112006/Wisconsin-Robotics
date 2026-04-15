@@ -2,12 +2,15 @@ import heapq
 import numpy as np
 
 def astar(graph, points, start_idx, goal_idx):
+    N = len(points)
+    goal_pos = points[goal_idx]
+
     # --- HEURISTIC ---
     # Straight line 3D euclidean distance from node n to the goal
     # This guides A* toward the goal efficiently
     # It never overestimates real cost, so A* stays optimal
     def heuristic(n):
-        return np.linalg.norm(points[n] - points[goal_idx])
+        return np.linalg.norm(points[n] - goal_pos)
 
     # --- OPEN SET ---
     # This is the priority queue (min-heap) of nodes to explore
@@ -18,20 +21,20 @@ def astar(graph, points, start_idx, goal_idx):
     heapq.heappush(open_set, (0, start_idx))
 
     # --- G SCORE ---
-    # g_score[n] = the actual cost of the cheapest path found so far from start to n
-    # Everything starts as infinity (undiscovered)
-    # Start node costs 0 to reach
-    g_score = {start_idx: 0.0}
+    # Pre-allocated numpy array — O(1) reads/writes by index, much faster than a dict
+    # Everything starts as infinity (undiscovered), start node costs 0
+    g_score = np.full(N, np.inf)
+    g_score[start_idx] = 0.0
 
     # --- CAME FROM ---
     # came_from[n] = which node we came from to reach n on the best path
     # Used at the end to reconstruct the full path by backtracking
     came_from = {}
 
-    # --- VISITED SET ---
-    # Once a node is popped from the heap and processed, we mark it visited
-    # We never need to process a node twice
-    visited = set()
+    # --- VISITED ARRAY ---
+    # Pre-allocated boolean array — faster than a Python set for large graphs
+    # visited[n] = True once node n has been fully processed
+    visited = np.zeros(N, dtype=bool)
 
     while open_set:
 
@@ -49,21 +52,21 @@ def astar(graph, points, start_idx, goal_idx):
             return path, g_score[goal_idx]
 
         # Skip if already processed
-        if current in visited:
+        if visited[current]:
             continue
-        visited.add(current)
+        visited[current] = True
 
         # --- EXPLORE NEIGHBORS ---
         for neighbor, weight in graph[current]:
 
-            if neighbor in visited:
+            if visited[neighbor]:
                 continue
 
             # Tentative g score if we go through current to reach neighbor
             tentative_g = g_score[current] + weight
 
             # Only update if this path to neighbor is cheaper than any previously found
-            if tentative_g < g_score.get(neighbor, float('inf')):
+            if tentative_g < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g
                 f_score = tentative_g + heuristic(neighbor)

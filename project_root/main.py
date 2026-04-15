@@ -12,24 +12,34 @@ from src.utils.nearest_point import find_nearest_node
 from src.utils.point_conversion import get_epsg, gps_to_xy
 from src.pathplanning.multi_target import compute_cost_matrix, find_best_order, build_full_path
 from src.utils.visualization import visualize_path
+from src.utils.cache import save_cache, load_cache
 
 def main():
-    # Get the LiDAR file path from the user and load it
-    # load_and_clean_lidar removes outliers and voxel downsamples the point cloud
     file_path = input("Enter file path : ").strip()
-    points = load_and_clean_lidar(file_path)
 
-    # Build the KDTree and KNN structure from the cleaned point cloud
-    # neighbour_indices[i] -> indices of K nearest neighbors of point i
-    # neighbour_distances[i] -> their corresponding euclidean distances
-    # tree -> the KDTree used for fast spatial queries
-    neighbour_indices, neighbour_distances, tree = build_knn(points)
+    # Try loading pre-built graph from cache first.
+    # The LiDAR data never changes, so there's no reason to re-run the full
+    # load -> KNN -> graph pipeline on every run — it only needs to happen once.
+    points, graph = load_cache(file_path)
 
-    # Build the weighted graph before finding nearest nodes
-    # Must be done first so we can check if nodes are connected when snapping GPS points
-    # graph[i] -> list of (neighbour_index, edge_weight) for node i
-    # Edges with slope > MAX_SLOPE_DEG are rejected
-    graph = build_graph_vectorized(points, neighbour_indices, neighbour_distances)
+    if points is None:
+        # No cache found — run the full pipeline and save for next time
+        print("No cache found, building graph from scratch (this will take a few minutes)...")
+
+        points = load_and_clean_lidar(file_path)
+
+        # Build the KDTree and KNN structure from the cleaned point cloud
+        # neighbour_indices[i] -> indices of K nearest neighbors of point i
+        # neighbour_distances[i] -> their corresponding euclidean distances
+        neighbour_indices, neighbour_distances, _ = build_knn(points)
+
+        # Build the weighted graph
+        # graph[i] -> list of (neighbour_index, edge_weight) for node i
+        # Edges with slope > MAX_SLOPE_DEG are rejected
+        graph = build_graph_vectorized(points, neighbour_indices, neighbour_distances)
+
+        save_cache(file_path, points, graph)
+        print("Graph built and cached. Future runs will load instantly.")
 
     # Read EPSG once from the LAZ file and reuse for all GPS conversions
     epsg = get_epsg(file_path)
