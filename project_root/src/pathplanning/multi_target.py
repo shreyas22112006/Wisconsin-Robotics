@@ -46,6 +46,9 @@ def find_best_order(cost_matrix):
     best_cost = float('inf')
     best_order = None
 
+    if len(target_positions) > 10:
+        raise ValueError(f"Too many targets ({len(target_positions)}) for brute-force TSP. Max is 10.")
+
     # Try every possible ordering of the targets
     # itertools.permutations handles any N without hardcoding
     for perm in itertools.permutations(target_positions):
@@ -76,6 +79,9 @@ def build_full_path(path_matrix, best_order):
 
     for curr in best_order:
         segment = path_matrix[prev][curr]
+
+        if segment is None:
+            raise ValueError(f"No path found between nodes {prev} and {curr}")
 
         # Avoid duplicating the connecting node between segments
         # The last node of one segment is the first node of the next

@@ -9,7 +9,7 @@ from src.pointcloud.load_clean import load_and_clean_lidar
 from src.pointcloud.knn_builder import build_knn
 from src.pathplanning.graph_builder import build_graph_vectorized
 from src.utils.nearest_point import find_nearest_node
-from src.utils.point_conversion import *
+from src.utils.point_conversion import get_epsg, gps_to_xyz
 from src.pathplanning.multi_target import compute_cost_matrix, find_best_order, build_full_path
 from src.utils.visualization import visualize_path
 
@@ -50,7 +50,7 @@ def main():
     for i in range(NT):
         # Take GPS input for each target and convert to XYZ
         lat, lon, alt = map(float, input(f"Enter gps info of {i+1}th target (lat lon alt) : ").split())
-        x, y, z = gps_to_xyz(lat, lon, alt)
+        x, y, z = gps_to_xyz(lat, lon, alt, epsg)
         # Snap each target GPS point to the nearest connected node in the graph
         nearest_idx, nearest_point = find_nearest_node([x, y, z], points, tree, graph)
         # Store each target as a dictionary with its graph index and 3D coordinates

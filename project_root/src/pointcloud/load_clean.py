@@ -4,11 +4,11 @@ import open3d as o3d
 
 
 def load_and_clean_lidar(path):
-    map = laspy.read(path)
+    las_data = laspy.read(path)
 
-    x = np.asarray(map.x)
-    y = np.asarray(map.y)
-    z = np.asarray(map.z)
+    x = np.asarray(las_data.x)
+    y = np.asarray(las_data.y)
+    z = np.asarray(las_data.z)
     
     # map.x, map.y, map.z are arrays of coordinates, each contians contains the x/y/z-coordinate of every single LiDAR point in your point cloud.
     # vstack stacks them vertically -> gives 3-row array : [ [x1, x2,...], [y1, y2,...], [z1, z2,...] ]

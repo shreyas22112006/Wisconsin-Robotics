@@ -3,8 +3,6 @@ MAX_SLOPE_DEG = 36
 SLOPE_MULTIPLIER = 5
 CELL_SIZE = 1.0
 
-LAZ_PATH = "/Users/shreyas/Documents/UWM/Wisconsin Robotics/project_root/data/mdrs.laz"
-
 '''
 Wheel width: 8 in
 Wheel diameter: 8.5 in

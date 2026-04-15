@@ -24,7 +24,12 @@ def visualize_path(full_path, points, start_idx, target_nodes, epsg):
     # center the map on the first point in the path (the start)
     # zoom_start=17 gives a close enough view to see individual terrain features
     # Esri.WorldImagery gives real satellite imagery as the base map
-    m = folium.Map(location=path_coords[0], zoom_start=17, tiles="Esri.WorldImagery")
+    m = folium.Map(location=path_coords[0], zoom_start=17)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Esri Satellite"
+    ).add_to(m)
 
     # ---------- Draw path ----------
     folium.PolyLine(path_coords, color="red", weight=3, opacity=0.9).add_to(m)

@@ -8,14 +8,13 @@ from src.pathplanning.graph_builder import build_graph_vectorized
 from src.pointcloud.knn_builder import build_knn
 from src.pointcloud.load_clean import load_and_clean_lidar
 
-from configs.settings import path
+lidar_path = input("Enter file path : ").strip()
 from testing import graph_stats
 
 import time
 
 
 def Test():
-    lidar_path = path
 
     start_time = time.time()
     points = load_and_clean_lidar(lidar_path)

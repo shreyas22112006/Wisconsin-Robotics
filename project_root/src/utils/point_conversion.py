@@ -2,6 +2,8 @@ import laspy
 import numpy as np
 from pyproj import Transformer
 
+_transformer_cache = {}
+
 def get_epsg(laz_path):
     """
     Reads the EPSG code from the LAZ file header.
@@ -62,7 +64,9 @@ def gps_to_xyz(lat, lon, alt, epsg):
     # TO the LAZ file's coordinate system (e.g. EPSG:32612 for UTM Zone 12N)
     # always_xy=True ensures we always pass (longitude, latitude) in that order
     # regardless of what the projection expects — avoids a common axis-swap bug
-    transformer = Transformer.from_crs("EPSG:4326", f"EPSG:{epsg}", always_xy=True)
+    if epsg not in _transformer_cache:
+        _transformer_cache[epsg] = Transformer.from_crs("EPSG:4326", f"EPSG:{epsg}", always_xy=True)
+    transformer = _transformer_cache[epsg]
 
     # Transform longitude and latitude into projected x and y coordinates
     # Note: transformer.transform takes (longitude, latitude) not (latitude, longitude)
