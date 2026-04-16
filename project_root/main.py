@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 
 # Add the parent folder of project_root to Python's path
 # so that imports like "from src.utils..." resolve correctly
@@ -77,6 +78,22 @@ def main():
     # returns a single flat list of node indices representing the complete route
     full_path = build_full_path(path_matrix, best_order)
     print(f"Full path has {len(full_path)} nodes")
+
+    # --- PATH SLOPE ANALYSIS ---
+    # Compute the slope between every consecutive pair of nodes on the path.
+    # This lets us objectively compare two different pipeline outputs:
+    # lower max slope = safer for the rover.
+    if len(full_path) > 1:
+        p = points[full_path]
+        dx = np.diff(p[:, 0])
+        dy = np.diff(p[:, 1])
+        dz = np.diff(p[:, 2])
+        horizontal = np.sqrt(dx**2 + dy**2)
+        horizontal = np.maximum(horizontal, 1e-6)
+        slopes_deg = np.degrees(np.arctan(np.abs(dz) / horizontal))
+        print(f"Path slope — max: {slopes_deg.max():.1f}°  "
+              f"mean: {slopes_deg.mean():.1f}°  "
+              f"segments over 20°: {(slopes_deg > 20).sum()}")
 
     # run visualization automatically, opens as an HTML file in the browser
     visualize_path(full_path, points, start_idx, target_nodes, epsg)
