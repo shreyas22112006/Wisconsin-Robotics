@@ -19,9 +19,14 @@ def load_and_clean_lidar(path, voxel_size=0.35, min_points_per_cell=2):
     cell_y = np.floor(y / voxel_size).astype(np.int64)
 
     # Encode (cell_x, cell_y) as a single integer key for fast grouping.
-    # Offset cell_x to avoid collision between negative and positive indices.
-    offset = int(cell_x.min()) * -1
-    keys = (cell_x + offset) * 1_000_000 + cell_y
+    # Shift both axes to start from 0, then use the actual y range as the
+    # row stride — this guarantees no collisions regardless of terrain size
+    # or coordinate system (UTM northings can be ~4,200,000m so cell_y values
+    # can reach ~12,000,000 — a fixed multiplier like 1,000,000 would collide).
+    cell_x_shifted = cell_x - cell_x.min()
+    cell_y_shifted = cell_y - cell_y.min()
+    y_range = int(cell_y_shifted.max()) + 1
+    keys = cell_x_shifted * y_range + cell_y_shifted
 
     # Sort points by cell key so all points in the same cell are contiguous
     sort_idx = np.argsort(keys, kind='stable')
