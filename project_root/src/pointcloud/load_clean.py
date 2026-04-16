@@ -1,34 +1,55 @@
 import laspy
 import numpy as np
-import open3d as o3d
 
 
-def load_and_clean_lidar(path):
+def load_and_clean_lidar(path, voxel_size=0.35, min_points_per_cell=2):
     las_data = laspy.read(path)
 
     x = np.asarray(las_data.x)
     y = np.asarray(las_data.y)
     z = np.asarray(las_data.z)
-    
-    # map.x, map.y, map.z are arrays of coordinates, each contians contains the x/y/z-coordinate of every single LiDAR point in your point cloud.
-    # vstack stacks them vertically -> gives 3-row array : [ [x1, x2,...], [y1, y2,...], [z1, z2,...] ]
-    # .T transposes it so each row becomes one point : [x, y, z]
-    # points.shape[0] gives no. of points in LiDAR cloud
+
+    # Stack into (N, 3) array — each row is one LiDAR point
     points = np.vstack((x, y, z)).T
 
-    # this creates a pointcloud object, like creating a container for all your 3d points
-    pcd = o3d.geometry.PointCloud()
+    # --- VOXEL HASH FILTER ---
+    # Assign every point to a voxel cell using integer grid coordinates.
+    # This is O(N) — one pass, no KD-tree, no pairwise distance computation.
+    cell_x = np.floor(x / voxel_size).astype(np.int64)
+    cell_y = np.floor(y / voxel_size).astype(np.int64)
 
-    # this converts NumPy array into Open3D format, after this line pcd now actually contains all the points from LiDAR data
-    pcd.points = o3d.utility.Vector3dVector(points)
+    # Encode (cell_x, cell_y) as a single integer key for fast grouping.
+    # Offset cell_x to avoid collision between negative and positive indices.
+    offset = int(cell_x.min()) * -1
+    keys = (cell_x + offset) * 1_000_000 + cell_y
 
-    # We can compute the average distance from each point to its nearest neighbors.
-    # If a point is too far from its neighbors compared to most points, it’s likely an outlier (noise).
-    # pcd had the cleaned point cloud data, ind -> indices of the kept point
-    pcd, ind = pcd.remove_statistical_outlier(nb_neighbors=15, std_ratio=2.0)
+    # Sort points by cell key so all points in the same cell are contiguous
+    sort_idx = np.argsort(keys, kind='stable')
+    keys_sorted = keys[sort_idx]
+    points_sorted = points[sort_idx]
 
-    pcd = pcd.voxel_down_sample(voxel_size = 0.35)
-    
-    # extract points from the cleaned cloud as a numpy array
-    points = np.asarray(pcd.points)
-    return points
+    # Find where each new cell starts
+    cell_starts = np.flatnonzero(np.diff(keys_sorted, prepend=keys_sorted[0] - 1))
+    cell_ends = np.append(cell_starts[1:], len(keys_sorted))
+    cell_counts = cell_ends - cell_starts
+
+    # --- OUTLIER REMOVAL ---
+    # Drop cells with fewer than min_points_per_cell points.
+    # Sparse cells are almost always noise or edge artifacts — same effect as
+    # statistical outlier removal but O(N) instead of O(N log N).
+    valid_mask = cell_counts >= min_points_per_cell
+    valid_starts = cell_starts[valid_mask]
+    valid_ends = cell_ends[valid_mask]
+
+    # --- REPRESENTATIVE POINT SELECTION ---
+    # For each valid cell, keep the point with the highest Z value.
+    # This is a real measured LiDAR point (not a centroid), and represents
+    # the actual terrain surface the rover will encounter.
+    # Using max Z avoids underestimating slopes — centroid averaging would
+    # make steep cells appear less severe than they really are.
+    kept_indices = np.array([
+        valid_starts[i] + np.argmax(points_sorted[valid_starts[i]:valid_ends[i], 2])
+        for i in range(len(valid_starts))
+    ])
+
+    return points_sorted[kept_indices]
