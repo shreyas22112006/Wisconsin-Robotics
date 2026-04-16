@@ -2,11 +2,19 @@ import folium
 import numpy as np
 from pyproj import Transformer
 
+_transformer_cache = {}
+
 def visualize_path(full_path, points, start_idx, target_nodes, epsg):
 
-    # create a transformer to convert from the LAZ file's coordinate system
-    # back to standard GPS lat/lon (EPSG:4326) so folium can place points on the map
-    transformer = Transformer.from_crs(f"EPSG:{epsg}", "EPSG:4326", always_xy=True)
+    if not full_path:
+        print("Warning: path is empty, nothing to visualize.")
+        return
+
+    # Cache the transformer so repeated calls (or future real-time use)
+    # don't rebuild it from scratch each time
+    if epsg not in _transformer_cache:
+        _transformer_cache[epsg] = Transformer.from_crs(f"EPSG:{epsg}", "EPSG:4326", always_xy=True)
+    transformer = _transformer_cache[epsg]
 
     def node_to_latlon(node_idx):
         # look up the XYZ coordinates of this node in the points array

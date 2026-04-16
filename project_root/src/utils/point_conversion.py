@@ -23,13 +23,11 @@ def get_epsg(laz_path):
         epsg: integer EPSG code of the LAZ file's coordinate system
     """
 
-    # Open the LAZ file and read its header metadata
-    # We only need the header here, not the actual point data
-    laz = laspy.read(laz_path)
-
-    # Extract the CRS (Coordinate Reference System) object from the header
-    # This contains all the projection information about how points are stored
-    crs = laz.header.parse_crs()
+    # Open the LAZ file in streaming mode to read the header only —
+    # laspy.read() loads all point data into memory which is wasteful
+    # here since we only need the CRS metadata from the header.
+    with laspy.open(laz_path) as f:
+        crs = f.header.parse_crs()
 
     # Convert the CRS object to a simple integer EPSG code
     # e.g. 32612 for UTM Zone 12N
