@@ -1,4 +1,4 @@
-from src.utils.geo_helpers import *
+from src.utils.geo_helpers import compute_edge_weight_vectorized
 import numpy as np
 
 '''
@@ -51,7 +51,7 @@ def build_graph_vectorized(points, neighbour_indices, neighbour_distances):
     a = np.minimum(i_indices, j_indices)
     b = np.maximum(i_indices, j_indices)
     edges = np.stack([a, b], axis=1)
-    edges_unique, unique_idx = np.unique(edges, axis=0, return_index=True)
+    _, unique_idx = np.unique(edges, axis=0, return_index=True)
     a = a[unique_idx]
     b = b[unique_idx]
     edge_weights = edge_weights[unique_idx]

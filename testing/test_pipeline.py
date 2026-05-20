@@ -18,7 +18,7 @@ def test_pipeline():
     print(f"Loaded and cleaned point cloud in {time.time() - start_time:.2f} seconds.")
 
     start_time = time.time()
-    neighbour_indices, neighbour_distances, tree = build_knn(points)
+    neighbour_indices, neighbour_distances = build_knn(points)
     print(f"KNN built in {time.time() - start_time:.2f} seconds.")
 
     start_time = time.time()

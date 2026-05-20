@@ -18,7 +18,7 @@ def main():
     # neighbour_indices[i] -> indices of K nearest neighbors of point i
     # neighbour_distances[i] -> their corresponding euclidean distances
     # tree -> the KDTree used for fast spatial queries
-    neighbour_indices, neighbour_distances, tree = build_knn(points)
+    neighbour_indices, neighbour_distances = build_knn(points)
 
     # Build the weighted graph before finding nearest nodes
     # Must be done first so we can check if nodes are connected when snapping GPS points
