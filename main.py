@@ -73,7 +73,7 @@ def main():
     full_path = build_full_path(path_matrix, best_order)
     print(f"Full path has {len(full_path)} nodes")
 
-    # --- PATH SLOPE ANALYSIS ---
+    # Path Slope Analysis
     # Compute the slope between every consecutive pair of nodes on the path.
     # This lets us objectively compare two different pipeline outputs:
     # lower max slope = safer for the rover.

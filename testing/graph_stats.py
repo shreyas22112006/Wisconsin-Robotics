@@ -23,10 +23,6 @@ def compute_graph_stats(graph):
 
 
 def print_graph_stats(stats):
-    """
-    Nicely formatted printout for presentation/debugging
-    """
-
     print("\n====== GRAPH STATISTICS ======")
     print(f"Number of nodes           : {stats['num_nodes']}")
     print(f"Number of edges           : {stats['num_edges']}")
