@@ -94,15 +94,13 @@ Tested on a real LiDAR scan of the MDRS (Mars Desert Research Station) site in U
 
 **Path statistics:**
 
-![Path stats](docs/path_stats.png)
-
 | Metric | Value |
-|---|---|
+|:---|---:|
 | Path cost | 2535.59 |
 | Total nodes | 923 |
-| Max slope | 15.1° |
-| Mean slope | 1.4° |
-| Segments over 20° | 0 |
+| Max slope | 15.1 deg |
+| Mean slope | 1.4 deg |
+| Segments over 20 deg | 0 |
 
 ## Documentation
 
