@@ -1,4 +1,4 @@
-# Wisconsin Robotics — URC Autonomous Path Planner
+# Wisconsin Robotics URC Autonomous Path Planner
 
 Terrain-aware autonomous path planner for the [University Rover Challenge](https://urc.marssociety.org/). Given a LiDAR scan and GPS waypoints, it computes the safest traversable route across all targets while respecting the rover's slope limits.
 
@@ -81,14 +81,14 @@ Edit `configs/settings.py`:
 | Parameter | Default | Effect |
 |---|---|---|
 | `K_NEIGHBORS` | `10` | KNN edges per point |
-| `MAX_SLOPE_DEG` | `36` | Slope limit in degrees; steeper edges are rejected |
+| `MAX_SLOPE_DEG` | `36` | Slope limit in degrees, steeper edges are rejected |
 | `SLOPE_MULTIPLIER` | `5` | Slope penalty weight relative to flat distance |
 
 ## Test Results
 
 Tested on a real LiDAR scan of the MDRS (Mars Desert Research Station) site in Utah with 1 start point and 3 targets.
 
-**Planned route** — green dot is start, orange dots are targets:
+**Planned route** (green dot is start, orange dots are targets):
 
 ![Path map](docs/path_map.png)
 
