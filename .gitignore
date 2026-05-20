@@ -16,6 +16,8 @@ build/
 # IDE files
 .vscode/
 .idea/
+.zed/
+.ropeproject
 
 # OS files
 .DS_Store
